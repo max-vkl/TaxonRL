@@ -76,6 +76,7 @@ class AlgorithmConfig:
 class TrainerConfig:
     total_epochs: int = 10
     max_steps: Optional[int] = None
+    entity_name: str = "gorillawatch"
     project_name: str = "easy_r1"
     experiment_name: str = "demo"
     logger: Tuple[str] = ("console", "wandb")

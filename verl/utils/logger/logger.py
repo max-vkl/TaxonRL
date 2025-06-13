@@ -109,6 +109,7 @@ class TensorBoardLogger(Logger):
 class WandbLogger(Logger):
     def __init__(self, config: Dict[str, Any]) -> None:
         wandb.init(
+            entity=config["trainer"]["entity_name"],
             project=config["trainer"]["project_name"],
             name=config["trainer"]["experiment_name"],
             config=config,
