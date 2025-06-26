@@ -20,7 +20,7 @@
         // DO NOT COMMIT THIS ENABLED TO REMOTE.
         // "--gpus",
         //    "device=0",
-        "--gpus=\"device=5 \"",
+        "--gpus=\"device=0,1,2,3 \"",
         "-u",
         "0"
     ],
