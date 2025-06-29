@@ -17,8 +17,9 @@ python3 -m verl.trainer.main \
     worker.rollout.n=20 \
     data.format_prompt=./examples/format_prompt/lfw_format.jinja \
     worker.reward.reward_function=./examples/reward_function/lfw.py:compute_score \
-    data.max_prompt_length=4096 \
-    data.max_response_length=4096 \
+    data.max_prompt_length=81920 \
+    data.max_response_length=81920 \
     worker.rollout.temperature=1.5 \
     worker.actor.micro_batch_size_per_device_for_update=2 \
-    worker.actor.micro_batch_size_per_device_for_experience=8
+    worker.actor.micro_batch_size_per_device_for_experience=8 \
+    worker.rollout.max_num_batched_tokens=163840 \
