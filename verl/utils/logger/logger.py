@@ -19,6 +19,8 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import torch
+
 from ..py_functional import convert_dict_to_str, flatten_dict, is_package_available, unflatten_dict
 from .gen_logger import AggregateGenerationsLogger
 
@@ -93,10 +95,20 @@ class SwanlabLogger(Logger):
 class TensorBoardLogger(Logger):
     def __init__(self, config: Dict[str, Any]) -> None:
         tensorboard_dir = os.getenv("TENSORBOARD_DIR", "tensorboard_log")
+        tensorboard_dir = os.path.join(
+            tensorboard_dir, config["trainer"]["project_name"], config["trainer"]["experiment_name"]
+        )
         os.makedirs(tensorboard_dir, exist_ok=True)
         print(f"Saving tensorboard log to {tensorboard_dir}.")
         self.writer = SummaryWriter(tensorboard_dir)
-        # self.writer.add_hparams(hparam_dict=flatten_dict(config), metric_dict={"placeholder": 0})
+        config_dict = {}
+        for key, value in flatten_dict(config).items():
+            if isinstance(value, (int, float, str, bool, torch.Tensor)):
+                config_dict[key] = value
+            else:
+                config_dict[key] = str(value)
+
+        self.writer.add_hparams(hparam_dict=config_dict, metric_dict={"placeholder": 0})
 
     def log(self, data: Dict[str, Any], step: int) -> None:
         for key, value in data.items():

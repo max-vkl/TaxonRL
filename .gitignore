@@ -175,5 +175,11 @@ outputs/
 checkpoints/
 wandb/
 
-# Meine Eigenen
 eval/qwen2.5_7b_rl_step30
+
+tensorboard_log/
+
+# data
+images/
+images*
+
