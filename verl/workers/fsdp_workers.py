@@ -133,9 +133,7 @@ class FSDPWorker(Worker):
             config.global_batch_size *= self.config.rollout.n
             self.print_rank0(f"{role} will use global batch size {config.global_batch_size}.")
 
-        config.global_batch_size_per_device = (
-            config.global_batch_size * config.ulysses_size
-        ) // self.device_mesh.size()
+        config.global_batch_size_per_device = config.global_batch_size // (world_size // config.ulysses_size)
         if config.global_batch_size_per_device == 0:
             raise ValueError(f"{role} global batch size * ulysses size must be larger than num gpus.")
 
@@ -455,7 +453,7 @@ class FSDPWorker(Worker):
             max_pixels = data.meta_info["max_pixels"]
             video_fps = data.meta_info["video_fps"]
             batch_multi_modal_inputs = []
-            for multi_modal_data in data.non_tensor_batch["multi_modal_data"]:
+            for multi_modal_data in data.non_tensor_batch["multi_modal_data"]:  # process multi modal data per sample
                 images, videos = [], []
                 if "images" in multi_modal_data:
                     for image in multi_modal_data["images"]:
@@ -470,16 +468,17 @@ class FSDPWorker(Worker):
                     # otherwise the batch features will be converted to dict keys
                     # see https://github.com/hiyouga/EasyR1/pull/339
                     multi_modal_inputs = dict(self.processor.image_processor(images=images, return_tensors="pt"))
-                    multi_modal_inputs = {k: v.to(torch.cuda.current_device()) for k, v in multi_modal_inputs.items()}
-                    batch_multi_modal_inputs.append(multi_modal_inputs)
                 elif len(videos) != 0:
                     multi_modal_inputs = dict(
                         self.processor.image_processor(images=None, videos=videos, return_tensors="pt")
                     )
-                    multi_modal_inputs = {k: v.to(torch.cuda.current_device()) for k, v in multi_modal_inputs.items()}
-                    batch_multi_modal_inputs.append(multi_modal_inputs)
-                else:  # text-only data
-                    batch_multi_modal_inputs.append({})
+                else:
+                    multi_modal_inputs = {}
+
+                multi_modal_inputs = {
+                    k: v.to(torch.cuda.current_device(), non_blocking=True) for k, v in multi_modal_inputs.items()
+                }
+                batch_multi_modal_inputs.append(multi_modal_inputs)
 
             self._cache["uid"] = data.non_tensor_batch["uid"]
             self._cache["multi_modal_inputs"] = np.array(batch_multi_modal_inputs, dtype=object)
@@ -518,16 +517,17 @@ class FSDPWorker(Worker):
             ) / (1024**3)
             metrics["perf/cpu_memory_used_gb"] = psutil.virtual_memory().used / (1024**3)
 
-            self.lr_scheduler.step()
             lr = self.lr_scheduler.get_last_lr()[0]
             metrics["actor/lr"] = lr
+            self.lr_scheduler.step()
 
-            # Metrics should be in non_tensor_batch instead of meta_info, as DataProto not concat meta_info.
+            # Metrics should be in non_tensor_batch instead of meta_info, as DataProto not concat meta_info
             output = DataProto(
                 non_tensor_batch={
                     key: np.array([value] if np.isscalar(value) else value) for key, value in metrics.items()
                 }
             )
+            # Metrics do not need post processing since their batch size is 1
 
         if self._use_param_offload:
             offload_fsdp_model(self.fsdp_module)
@@ -678,12 +678,13 @@ class FSDPWorker(Worker):
             lr = self.lr_scheduler.get_last_lr()[0]
             metrics["critic/lr"] = lr
 
-            # Metrics should be in non_tensor_batch instead of meta_info, as DataProto not concat meta_info.
+            # Metrics should be in non_tensor_batch instead of meta_info, as DataProto not concat meta_info
             output = DataProto(
                 non_tensor_batch={
-                    metric: np.array([value] if np.isscalar(value) else value) for metric, value in metrics.items()
+                    key: np.array([value] if np.isscalar(value) else value) for key, value in metrics.items()
                 }
             )
+            # Metrics do not need post processing since their batch size is 1
 
         if self._use_param_offload:
             offload_fsdp_model(self.fsdp_module)

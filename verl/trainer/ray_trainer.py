@@ -37,7 +37,7 @@ from ..single_controller.base import Worker
 from ..single_controller.ray import RayClassWithInitArgs, RayResourcePool, RayWorkerGroup
 from ..single_controller.ray.base import create_colocated_worker_cls
 from ..utils import torch_functional as VF
-from ..utils.checkpoint import CHECKPOINT_TRACKER, remove_obsolete_ckpt
+from ..utils.checkpoint import CHECKPOINT_TRACKER, find_latest_ckpt, remove_obsolete_ckpt
 from ..utils.logger import Tracker
 from ..utils.py_functional import convert_dict_to_str, timer
 from ..utils.seqlen_balancing import get_seqlen_balanced_partitions, log_seqlen_unbalance
@@ -46,7 +46,13 @@ from ..workers.reward import FunctionRewardManager
 from . import core_algos
 from .config import PPOConfig
 from .core_algos import AdvantageEstimator, FixedKLController, KLController, compute_kl, get_kl_controller
-from .metrics import compute_data_metrics, compute_throughout_metrics, compute_timing_metrics, reduce_metrics
+from .metrics import (
+    compute_data_metrics,
+    compute_length_metrics,
+    compute_throughout_metrics,
+    compute_timing_metrics,
+    reduce_metrics,
+)
 
 
 class Role(IntEnum):
@@ -336,21 +342,28 @@ class RayPPOTrainer:
             json.dump(checkpointer_tracker_info, f, ensure_ascii=False, indent=2)
 
     def _load_checkpoint(self) -> None:
-        if self.config.trainer.load_checkpoint_path is None:
+        if self.config.trainer.load_checkpoint_path is not None:
+            load_checkpoint_path = self.config.trainer.load_checkpoint_path
+        elif self.config.trainer.find_last_checkpoint:
+            load_checkpoint_path = find_latest_ckpt(self.config.trainer.save_checkpoint_path)
+        else:
+            load_checkpoint_path = None
+
+        if load_checkpoint_path is None:
             return
 
-        if "global_step_" not in self.config.trainer.load_checkpoint_path.strip(os.path.sep).split(os.path.sep)[-1]:
+        if "global_step_" not in load_checkpoint_path.strip(os.path.sep).split(os.path.sep)[-1]:
             raise ValueError("`load_checkpoint_path` should end with `global_step_*`.")
 
-        print(f"Load from checkpoint: {self.config.trainer.load_checkpoint_path}.")
-        self.global_step = int(self.config.trainer.load_checkpoint_path.strip(os.path.sep).split("global_step_")[-1])
-        actor_path = os.path.join(self.config.trainer.load_checkpoint_path, "actor")
+        print(f"Load from checkpoint: {load_checkpoint_path}.")
+        self.global_step = int(load_checkpoint_path.strip(os.path.sep).split("global_step_")[-1])
+        actor_path = os.path.join(load_checkpoint_path, "actor")
         self.actor_rollout_ref_wg.load_checkpoint(actor_path)
         if self.use_critic:
-            critic_path = os.path.join(self.config.trainer.load_checkpoint_path, "critic")
+            critic_path = os.path.join(load_checkpoint_path, "critic")
             self.critic_wg.load_checkpoint(critic_path)
 
-        dataloader_path = os.path.join(self.config.trainer.load_checkpoint_path, "dataloader.pt")
+        dataloader_path = os.path.join(load_checkpoint_path, "dataloader.pt")
         if os.path.exists(dataloader_path):
             dataloader_state_dict = torch.load(dataloader_path, weights_only=False)
             self.train_dataloader.load_state_dict(dataloader_state_dict)
@@ -380,6 +393,7 @@ class RayPPOTrainer:
         # Lists to collect samples for the table
         sample_inputs, sample_outputs, sample_labels, sample_scores = [], [], [], []
         reward_metrics_lst = defaultdict(list)
+        length_metrics_lst = defaultdict(list)
         print("Start validation...")
         self.actor_rollout_ref_wg.prepare_rollout_engine()
         for batch_dict in self.val_dataloader:
@@ -420,12 +434,16 @@ class RayPPOTrainer:
             for key, value in reward_metrics.items():
                 reward_metrics_lst[key].extend(value)
 
+            for key, value in compute_length_metrics(test_batch).items():
+                length_metrics_lst[key].append(value)
+
         self.actor_rollout_ref_wg.release_rollout_engine()
         self._maybe_log_val_generations(sample_inputs, sample_outputs, sample_labels, sample_scores)
         self.val_reward_score = torch.cat(reward_tensor_lst, dim=0).sum(-1).mean().item()
         val_reward_metrics = {f"val/{key}_reward": value for key, value in reduce_metrics(reward_metrics_lst).items()}
+        val_length_metrics = {f"val_{key}": value for key, value in reduce_metrics(length_metrics_lst).items()}
         print("Finish validation.")
-        return {"val/reward_score": self.val_reward_score, **val_reward_metrics}
+        return {"val/reward_score": self.val_reward_score, **val_reward_metrics, **val_length_metrics}
 
     def _balance_batch(self, batch: DataProto, metrics: Dict[str, Any], logging_prefix: str = "global_seqlen") -> None:
         """Reorder the data on single controller such that each dp rank gets similar total tokens"""

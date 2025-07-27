@@ -38,6 +38,7 @@ worker:
     micro_batch_size_per_device_for_experience: 16  # equivalent to verl's rollout.log_prob_micro_batch_size_per_gpu
     max_grad_norm: 1.0
     padding_free: true
+    dynamic_batching: true
     ulysses_size: 1
     model:
       model_path: Qwen/Qwen2.5-7B-Instruct
@@ -60,7 +61,7 @@ worker:
   rollout:
     n: 5
     temperature: 1.0
-    top_p: 0.99
+    top_p: 1.0
     limit_images: 0
     gpu_memory_utilization: 0.6
     enforce_eager: false
@@ -68,7 +69,8 @@ worker:
     tensor_parallel_size: 2
     disable_tqdm: false
     val_override_config:
-      temperature: 0.5
+      temperature: 0.6
+      top_p: 0.95
       n: 1
 
   ref:
@@ -102,3 +104,4 @@ trainer:
   save_model_only: false
   save_checkpoint_path: null
   load_checkpoint_path: null
+  find_last_checkpoint: true

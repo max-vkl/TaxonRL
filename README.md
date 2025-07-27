@@ -46,6 +46,14 @@ We recommend using the [pre-built docker image](https://hub.docker.com/r/hiyouga
 
 ```bash
 docker pull hiyouga/verl:ngc-th2.7.0-cu12.6-vllm0.9.1
+docker run -it --ipc=host --gpus=all hiyouga/verl:ngc-th2.7.0-cu12.6-vllm0.9.1
+```
+
+If your environment does not support Docker, you can consider using **Apptainer**:
+
+```bash
+apptainer pull easyr1.sif docker://hiyouga/verl:ngc-th2.7.0-cu12.6-vllm0.9.1
+apptainer shell --nv --cleanenv --bind /mnt/your_dir:/mnt/your_dir easyr1.sif
 ```
 
 ### Hardware Requirements
@@ -162,6 +170,7 @@ See [baselines.md](assets/baselines.md).
 - **SophiaVL-R1**: Reinforcing MLLMs Reasoning with Thinking Reward. [![[code]](https://img.shields.io/github/stars/kxfan2002/SophiaVL-R1)](https://github.com/kxfan2002/SophiaVL-R1) [![[arxiv]](https://img.shields.io/badge/arxiv-2505.17018-blue)](https://arxiv.org/abs/2505.17018)
 - **Vision-Matters**: Simple Visual Perturbations Can Boost Multimodal Math Reasoning. [![[code]](https://img.shields.io/github/stars/YutingLi0606/Vision-Matters)](https://github.com/YutingLi0606/Vision-Matters) [![[arxiv]](https://img.shields.io/badge/arxiv-2506.09736-blue)](https://arxiv.org/abs/2506.09736)
 - **VTool-R1**: VLMs Learn to Think with Images via Reinforcement Learning on Multimodal Tool Use. [![[code]](https://img.shields.io/github/stars/VTOOL-R1/vtool-r1)](https://github.com/VTOOL-R1/vtool-r1) [![[arxiv]](https://img.shields.io/badge/arxiv-2505.19255-blue)](https://arxiv.org/abs/2505.19255)
+- **Long-RL**: Scaling RL to Long Sequences. [![[code]](https://img.shields.io/github/stars/NVlabs/Long-RL)](https://github.com/NVlabs/Long-RL) [![[arxiv]](https://img.shields.io/badge/arxiv-2507.07966-blue)](https://arxiv.org/abs/2507.07966)
 
 ## TODO
 
