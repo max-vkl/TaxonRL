@@ -186,3 +186,6 @@ tensorboard_log/
 images/
 images*
 
+
+# my own
+start_checkpoints/
