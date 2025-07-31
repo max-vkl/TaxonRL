@@ -4,10 +4,10 @@ set -x
 
 export PYTHONUNBUFFERED=1
 
-MODEL_PATH=Qwen/Qwen2.5-VL-7B-Instruct # replace it with your local file path
+MODEL_PATH=/workspaces/EasyR1/start_checkpoints/qwen-7b-gemini-1k-traces-s120 # replace it with your local file path
 
 python3 -m verl.trainer.main \
-    trainer.experiment_name=1.7_basic_v3_15k_small_rollout \
+    trainer.experiment_name=1.8_basic_v3_15k_gemini_ct \
     config=examples/config.yaml \
     data.train_files=maxvonk/gorilla-pairs-v3-15k-800px-sft-gemini-flash-1k@train \
     data.val_files=maxvonk/gorilla-pairs-v3-15k-800px-sft-gemini-flash-1k@validation \
