@@ -177,3 +177,4 @@ wandb/
 
 # Meine Eigenen
 eval/qwen2.5_7b_rl_step30
+start_checkpoints/
