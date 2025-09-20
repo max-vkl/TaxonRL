@@ -12,9 +12,10 @@ python3 -m verl.trainer.main \
     data.train_files=maxvonk/bird-pairs-original-deduplicated-800px@train \
     data.val_files=maxvonk/bird-pairs-original-deduplicated-800px@validation \
     worker.actor.model.model_path=${MODEL_PATH} \
-    trainer.n_gpus_per_node=6 \
-    worker.actor.global_batch_size=96 \
-    data.rollout_batch_size=96 \
+    trainer.n_gpus_per_node=4 \
+    data.rollout_batch_size=128 \
     worker.rollout.n=16 \
     data.format_prompt=/workspaces/EasyR1/examples/format_prompt/lfw_format.jinja \
     worker.reward.reward_function=/workspaces/EasyR1/examples/reward_function/lfw.py:compute_score \
+    data.max_prompt_length=4096 \
+    data.max_response_length=4096 \
