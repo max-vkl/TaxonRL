@@ -8,6 +8,8 @@ from unittest.mock import patch
 from vllm import LLM, SamplingParams
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 
+# export VLLM_USE_TRITON_FLASH_ATTN = 0
+
 
 def fetch_image(url: str) -> Image.Image:
     """
