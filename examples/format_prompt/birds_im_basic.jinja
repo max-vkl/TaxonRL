@@ -1,0 +1,17 @@
+{{ content | trim }}
+Determine if the birds in these two images are the same species.
+
+First, think through your reasoning step-by-step inside `<think></think>` tags. Your reasoning must follow a specific taxonomic hierarchy. If at any point you determine the birds belong to a different taxon, you can stop the hierarchical analysis.
+
+Your taxonomic analysis inside the `<think>` tags must be structured as follows:
+
+1.  **Order Analysis**: In your text, identify the likely **Order** for each bird. Then, conclude if they are the same by placing one of the following words inside an `<order>` tag: `Same`, `Different`, or `Uncertain`.
+    *   Example: `...The bird in image 1 is a perching bird, likely from the order Passeriformes. The bird in image 2 is a type of waterfowl, likely from the order Anseriformes. <order>Different</order>`
+
+2.  **Family Analysis**: If the conclusion for Order was `Same` or `Uncertain`, proceed to the Family level. In your text, identify the likely **Family** for each bird. Then, conclude if they are the same inside a `<family>` tag, using only `Same`, `Different`, or `Uncertain`.
+
+3.  **Genus Analysis**: If the conclusion for Family was `Same` or `Uncertain`, proceed to the Genus level. In your text, identify the likely **Genus** for each bird. Then, conclude if they are the same inside a `<genus>` tag, using only `Same`, `Different`, or `Uncertain`.
+
+After the taxonomic analysis, continue your reasoning by comparing specific visual features to make your final determination about the species.
+
+Finally, answer with a confidence score rounded to four decimal places between 1.0000 (same species) and 0.0000 (different species) inside `<answer></answer>` tags.
