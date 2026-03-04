@@ -6,6 +6,8 @@ This repository contains the **reinforcement-learning (GRPO) training pipeline**
 
 TaxonRL trains a vision-language model to produce **structured, interpretable reasoning traces** and uses **intermediate rewards** aligned with a **taxonomic hierarchy** (e.g., Order → Family → Genus) to encourage faithful, fine-grained visual reasoning.
 
+![TaxonRL intermediate-reward reasoning example](assets/bird_example.jpg)
+
 ## What this repo is
 
 - **This repo is**: a GRPO/RL training framework (Ray + FSDP + vLLM rollouts) plus domain-specific **prompt templates** and **reward functions** for intermediate-reward training.
