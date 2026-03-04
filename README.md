@@ -1,6 +1,6 @@
 # TaxonRL: Intermediate-Reward RL for Interpretable Fine-Grained Visual Reasoning (WACV 2026)
 
-This repository contains the **reinforcement-learning (GRPO) training codepath** used in:
+This repository contains the **reinforcement-learning (GRPO) training pipeline** used in:
 
 > von Klinski, M. and Schall, M. **TaxonRL: Reinforcement Learning with Intermediate Rewards for Interpretable Fine-Grained Visual Reasoning**. WACV 2026.
 
