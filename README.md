@@ -69,7 +69,7 @@ You can also point `MODEL_PATH` to a **local Hugging Face-format directory** (fo
 
 ### 2) Launch training
 
-Inside the Docker container:
+Inside the main repository, run:
 
 ```bash
 bash examples/fungi/fungi_im_6g.sh
