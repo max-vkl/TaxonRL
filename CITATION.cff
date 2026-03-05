@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite the TaxonRL paper (preferred) and/or
+  this repository.
+title: TaxonRL
+license: Apache-2.0
+
+preferred-citation:
+  type: conference-paper
+  title: >-
+    TaxonRL: Reinforcement Learning with Intermediate Rewards for Interpretable
+    Fine-Grained Visual Reasoning
+  authors:
+    - family-names: von Klinski
+      given-names: Maximilian
+    - family-names: Schall
+      given-names: Maximilian
+  collection-title: >-
+    Proceedings of the IEEE/CVF Winter Conference on Applications of Computer
+    Vision (WACV)
+  year: 2026
+  month: 3
+  start: 2485
+  end: 2498
